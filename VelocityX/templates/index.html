@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VELOCITY X - AI Vision Assistant</title>
+    <style>
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Particle Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+            filter: blur(1px);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(20vw);
+                opacity: 0;
+            }
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 10px 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Sunglasses Frame */
+        .sunglasses {
+            position: relative;
+            width: 600px;
+            height: 250px;
+            margin: 20px 0;
+        }
+
+        .frame {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border-radius: 120px 120px 150px 150px;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                inset 0 5px 15px rgba(255, 255, 255, 0.1),
+                0 0 0 5px rgba(0, 0, 0, 0.8),
+                0 0 0 6px rgba(255, 255, 255, 0.1);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        /* Bridge (center part) */
+        .bridge {
+            position: absolute;
+            width: 120px;
+            height: 40px;
+            /* background: linear-gradient(145deg, #1a1a2e, #16213e); */
+            top: 105px;
+            left: 240px;
+            border-radius: 5px;
+            /* box-shadow: 
+                inset 0 2px 5px rgba(255, 255, 255, 0.1),
+                0 0 0 2px rgba(0, 0, 0, 0.5); */
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Brand on nose pad */
+        .brand {
+            font-size: 13px;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: white;
+            text-shadow: 0 0 5px rgba(0, 150, 255, 0.7);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 3px 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            transform: translateY(5px);
+        }
+
+        /* Lenses */
+        .lens {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 
+                inset 0 0 30px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(0, 150, 255, 0.3);
+            border: 5px solid rgba(0, 0, 0, 0.7);
+            top: 15px;
+        }
+
+        .lens-left {
+            left: 15px;
+            background: linear-gradient(135deg, rgba(0, 50, 100, 0.7), rgba(0, 100, 150, 0.4));
+        }
+
+        .lens-right {
+            right: 15px;
+            background: linear-gradient(135deg, rgba(0, 100, 150, 0.4), rgba(0, 50, 100, 0.7));
+        }
+
+        /* Lens reflection effect */
+        .lens::after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            top: 30px;
+            left: 30px;
+            transform: rotate(45deg);
+            filter: blur(5px);
+            animation: reflection 8s infinite ease-in-out;
+            z-index: 3;
+        }
+
+        @keyframes reflection {
+            0%, 100% {
+                transform: rotate(45deg) translate(0, 0);
+            }
+            50% {
+                transform: rotate(45deg) translate(20px, 20px);
+            }
+        }
+
+        /* Camera feed */
+        .camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 1;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .lens-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .tint {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 120, 255, 0.2);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Mode Selection */
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 150, 255, 0.4);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #0066ff, #00aaff);
+            box-shadow: 0 6px 20px rgba(0, 150, 255, 0.6);
+        }
+
+        /* Main Action Buttons */
+        .action-section {
+            display: flex;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #0066ff, #00aaff);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 150, 255, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 150, 255, 0.7);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Result Section */
+        .result-section {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .result-text {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            min-height: 100px;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: pre-wrap;
+        }
+
+        /* Speaker Animation */
+        .speaker {
+            position: absolute;
+            width: 100px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            top: 90px;
+        }
+
+        .speaker-left {
+            left: -110px;
+        }
+
+        .speaker-right {
+            right: -110px;
+        }
+
+        .sound-wave {
+            position: absolute;
+            width: 6px;
+            height: 3px;
+            background: rgba(0, 200, 255, 0.7);
+            border-radius: 3px;
+            animation: soundWave 1.5s infinite ease-in-out;
+        }
+
+        .sound-wave.speaking {
+            animation: soundWaveSpeaking 0.5s infinite ease-in-out;
+        }
+
+        @keyframes soundWave {
+            0%, 100% {
+                height: 3px;
+                opacity: 0.3;
+            }
+            50% {
+                height: 18px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes soundWaveSpeaking {
+            0%, 100% {
+                height: 5px;
+                opacity: 0.7;
+            }
+            50% {
+                height: 20px;
+                opacity: 1;
+            }
+        }
+
+        /* Hidden elements for camera functionality */
+        #video {
+            display: none;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        /* Entrance Animation */
+        .sunglasses, .mode-selector, .action-section, .result-section {
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sunglasses {
+                width: 400px;
+                height: 167px;
+            }
+            
+            .lens {
+                width: 147px;
+                height: 147px;
+            }
+            
+            .lens-left {
+                left: 10px;
+            }
+            
+            .lens-right {
+                right: 10px;
+            }
+            
+            .bridge {
+                width: 80px;
+                height: 27px;
+                top: 70px;
+                left: 160px;
+            }
+            
+            .brand {
+                font-size: 10px;
+                padding: 2px 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Particles Background -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="status-bar" id="status-bar">Welcome! Ready to assist with AI vision analysis</div>
+
+        <div class="sunglasses">
+            <!-- Frame -->
+            <div class="frame"></div>
+            
+            <!-- Bridge with Brand -->
+            <div class="bridge">
+                <div class="brand">VELOCITY&nbsp;X</div>
+            </div>
+            
+            <!-- Left Lens -->
+            <div class="lens lens-left">
+                <div class="lens-content">
+                    <video class="camera-feed" id="left-camera" playsinline autoplay muted></video>
+                    <div class="tint"></div>
+                </div>
+            </div>
+            
+            <!-- Right Lens -->
+            <div class="lens lens-right">
+                <div class="lens-content">
+                    <video class="camera-feed" id="right-camera" playsinline autoplay muted></video>
+                    <div class="tint"></div>
+                </div>
+            </div>
+            
+            <!-- Left Speaker -->
+            <div class="speaker speaker-left" id="left-speaker"></div>
+            
+            <!-- Right Speaker -->
+            <div class="speaker speaker-right" id="right-speaker"></div>
+        </div>
+
+        <!-- Mode Selection -->
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="object">📦 Object Detection</button>
+            <button class="mode-btn" data-mode="currency">💰 Currency Recognition</button>
+            <button class="mode-btn" data-mode="text">📖 Text Reader</button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-section">
+            <button id="enable-camera-btn" class="action-btn">📷 Enable Camera</button>
+            <button id="capture-btn" class="action-btn" disabled>📸 Capture & Analyze</button>
+        </div>
+
+        <!-- Result Section -->
+        <div class="result-section">
+            <h3>Analysis Result:</h3>
+            <div id="result-text" class="result-text">Ready for analysis...</div>
+        </div>
+    </div>
+
+    <!-- Hidden camera elements -->
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Generate particles
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.width = (Math.random() * 5 + 2) + "px";
+                particle.style.height = particle.style.width;
+                particle.style.left = (Math.random() * 100) + "vw";
+                particle.style.top = (Math.random() * 100) + "vh";
+                particle.style.animationDelay = (Math.random() * 15) + "s";
+                particle.style.animationDuration = (Math.random() * 10 + 10) + "s";
+                particlesContainer.appendChild(particle);
+            }
+
+            // Generate sound waves for speakers
+            const leftSpeaker = document.getElementById('left-speaker');
+            const rightSpeaker = document.getElementById('right-speaker');
+            
+            for (let i = 0; i < 6; i++) {
+                const waveLeft = document.createElement('div');
+                waveLeft.classList.add('sound-wave');
+                waveLeft.style.left = (10 + i * 15) + 'px';
+                waveLeft.style.animationDelay = (i * 0.2) + 's';
+                leftSpeaker.appendChild(waveLeft);
+                
+                const waveRight = document.createElement('div');
+                waveRight.classList.add('sound-wave');
+                waveRight.style.left = (10 + i * 15) + 'px';
+                waveRight.style.animationDelay = (i * 0.2 + 0.1) + 's';
+                rightSpeaker.appendChild(waveRight);
+            }
+
+            // Mode selection
+            const modeButtons = document.querySelectorAll('.mode-btn');
+            let currentMode = 'object';
+            
+            modeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    modeButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentMode = this.dataset.mode;
+                    updateStatusBar(`Mode changed to: ${this.textContent}`);
+                });
+            });
+
+            // Status bar update function
+            function updateStatusBar(message) {
+                document.getElementById('status-bar').textContent = message;
+            }
+
+            // Function to animate speaker waves when speaking
+            function animateSpeakers(speaking) {
+                const waves = document.querySelectorAll('.sound-wave');
+                waves.forEach(wave => {
+                    if (speaking) {
+                        wave.classList.add('speaking');
+                    } else {
+                        wave.classList.remove('speaking');
+                    }
+                });
+            }
+
+            // Function to speak text automatically
+            function speakText(text) {
+                if (text && text !== 'Processing...' && !text.startsWith('Error') && text !== 'Ready for analysis...') {
+                    // Use Web Speech API for text-to-speech
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance(text);
+                        utterance.rate = 0.8;
+                        utterance.pitch = 1;
+                        utterance.volume = 1;
+                        
+                        utterance.onstart = function() {
+                            updateStatusBar('Speaking result...');
+                            animateSpeakers(true);
+                        };
+                        
+                        utterance.onend = function() {
+                            updateStatusBar('Analysis complete');
+                            animateSpeakers(false);
+                        };
+                        
+                        utterance.onerror = function() {
+                            updateStatusBar('Speech synthesis failed');
+                            animateSpeakers(false);
+                        };
+                        
+                        speechSynthesis.speak(utterance);
+                    } else {
+                        // Fallback to server-side TTS if available
+                        fetch('/speak', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ text: text })
+                        })
+                        .then(() => {
+                            updateStatusBar('Speaking result...');
+                            animateSpeakers(true);
+                            setTimeout(() => {
+                                animateSpeakers(false);
+                                updateStatusBar('Analysis complete');
+                            }, 3000);
+                        })
+                        .catch(error => {
+                            updateStatusBar('Speech synthesis failed');
+                            animateSpeakers(false);
+                        });
+                    }
+                }
+            }
+
+            // Camera functionality
+            const video = document.getElementById('video');
+            const leftCamera = document.getElementById('left-camera');
+            const rightCamera = document.getElementById('right-camera');
+            const enableCameraBtn = document.getElementById('enable-camera-btn');
+            const captureBtn = document.getElementById('capture-btn');
+            
+            enableCameraBtn.addEventListener('click', async function() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.srcObject = stream;
+                    leftCamera.srcObject = stream;
+                    rightCamera.srcObject = stream.clone();
+                    
+                    this.textContent = '📷 Camera Active';
+                    this.disabled = true;
+                    captureBtn.disabled = false;
+                    updateStatusBar('Camera enabled - Ready to capture');
+                } catch (err) {
+                    console.error('Error accessing camera:', err);
+                    updateStatusBar('Camera access denied. Please check permissions.');
+                }
+            });
+
+            // Capture and analyze
+            const canvas = document.getElementById('canvas');
+            const resultText = document.getElementById('result-text');
+            
+            captureBtn.addEventListener('click', function() {
+                const context = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // Process the captured image
+                canvas.toBlob(function(blob) {
+                    const formData = new FormData();
+                    formData.append('file', blob, 'capture.jpg');
+                    formData.append('mode', currentMode);
+                    
+                    resultText.textContent = 'Processing...';
+                    updateStatusBar('Analyzing image...');
+                    
+                    fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            resultText.textContent = 'Error: ' + data.error;
+                            updateStatusBar('Analysis failed');
+                        } else {
+                            resultText.textContent = data.result;
+                            updateStatusBar('Analysis complete');
+                            // Automatically speak the result
+                            speakText(data.result);
+                        }
+                    })
+                    .catch(error => {
+                        resultText.textContent = 'Error: ' + error.message;
+                        updateStatusBar('Connection error');
+                    });
+                }, 'image/jpeg', 0.9);
+            });
+        });
+    </script>
+    <script src="/static/js/objectDetection.js"></script>
+    <script src="/static/js/currencyDetection.js"></script>
+    <script src="/static/js/textReader.js"></script>
+</body>
+</html>
